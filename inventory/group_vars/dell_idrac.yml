@@ -1,0 +1,5 @@
+---
+vendor: dell
+redfish_system_id: "System.Embedded.1"   # Dell's fixed embedded system id
+redfish_manager_id: "iDRAC.Embedded.1"
+baseline_key: "{{ server_model }}"        # which baseline section this host is judged against
