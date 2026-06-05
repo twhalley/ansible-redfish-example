@@ -1,0 +1,5 @@
+---
+vendor: lenovo
+redfish_system_id: "1"
+redfish_manager_id: "1"
+baseline_key: "{{ server_model }}"
