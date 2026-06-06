@@ -1,0 +1,21 @@
+# External repos / large vendor data — not source
+iDRAC-Redfish-Scripting/
+idrac-mockup/
+
+# Installed collections (rebuilt from requirements.yml)
+collections/
+
+# Python / venv
+venv/
+__pycache__/
+*.pyc
+
+# Vault password files — NEVER commit
+.vault_pass
+*.vault_pass
+
+# Decrypted secrets
+inventory/group_vars/all/vault.yml
+
+# Generated reports
+files/reports/
