@@ -84,6 +84,9 @@ ansible-playbook playbooks/10_audit.yml --limit poc-dell-01
 ansible-playbook playbooks/20_compliance.yml --limit poc-dell-01
 
 # Stage a BIOS setup password change (--check for dry run)
+# BIOS_OLD_PASSWORD and BIOS_NEW_PASSWORD must be set in the environment
+export BIOS_OLD_PASSWORD=""
+export BIOS_NEW_PASSWORD="YourNewPassword"
 ansible-playbook playbooks/30_bios_password.yml --limit poc-dell-01 --check
 
 # Fetch firmware inventory via raw Redfish URI with retry handling
@@ -136,13 +139,24 @@ The mockup deliberately has `SecureBoot: Disabled` while the baseline requires `
 
 ## Secrets
 
-BMC credentials are stored in an Ansible Vault file (`inventory/group_vars/all/vault.yml`). The vault file is committed encrypted — only the vault password is secret. In production this would be replaced by a HashiCorp Vault or CyberArk lookup plugin, with the vault password sourced from the secrets manager at runtime.
+Two tiers of secret management are used, reflecting different sensitivity levels:
+
+**BMC read credentials** (`vault_bmc_username`, `vault_bmc_password`) are stored in an Ansible Vault file (`inventory/group_vars/all/vault.yml`). The vault file is committed encrypted (AES-256) — only the vault password is secret. The vault password is stored in `.vault_pass` locally and as the `VAULT_PASSWORD` GitHub Secret in CI. In production this would be replaced by a HashiCorp Vault or CyberArk lookup plugin.
+
+**BIOS setup password** (`BIOS_OLD_PASSWORD`, `BIOS_NEW_PASSWORD`) is more sensitive — it's a write credential that changes server firmware configuration. It is never stored in the vault. Instead it is sourced from environment variables at runtime, populated from GitHub Secrets in CI or a secrets manager in production. This means the BIOS password is never written to disk or committed to the repository in any form.
+
+```
+Ansible Vault  →  BMC polling credentials (read)
+GitHub Secrets →  BIOS setup password (write, higher sensitivity)
+```
 
 ## CI
 
 GitHub Actions runs on every pull request to `master`:
 
 1. `lint-and-validate` — yamllint + ansible syntax check across all playbooks
-2. `compliance` — spins up the DMTF mockup server, runs `20_compliance.yml` against it
+2. `compliance` — spins up the DMTF mockup server with a real Dell iDRAC9 mockup, then runs:
+   - `20_compliance.yml` — full compliance check (SecureBoot finding expected)
+   - `30_bios_password.yml --check` — BIOS password dry run, with `BIOS_OLD_PASSWORD` and `BIOS_NEW_PASSWORD` sourced from GitHub Secrets
 
 The `master` branch is protected by a ruleset: no direct pushes, PR required, signed commits enforced, `lint-and-validate` must pass before merge.
