@@ -1,5 +1,0 @@
----
-bios_password_name: "SetupPassword"   # Dell's name for the BIOS setup password
-bios_reboot_on_change: false          # safety default — never reboot without explicit override
-bios_old_password: "{{ vault_bios_old_password }}"
-bios_new_password: "{{ vault_bios_new_password }}"

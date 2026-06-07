@@ -1,6 +1,0 @@
----
-- name: Compliance - check live state against baseline
-  hosts: bmc
-  gather_facts: false
-  roles:
-    - compliance_check

@@ -1,6 +1,0 @@
----
-galaxy_info:
-  author: twhalley
-  description: Set Dell iDRAC BIOS setup password via Redfish — write path, requires change approval
-  license: MIT
-  min_ansible_version: "2.15"

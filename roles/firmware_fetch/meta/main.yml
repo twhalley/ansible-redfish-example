@@ -1,6 +1,0 @@
----
-galaxy_info:
-  author: twhalley
-  description: Fetch firmware inventory directly via Redfish URI with retry handling for flaky BMCs
-  license: MIT
-  min_ansible_version: "2.15"
