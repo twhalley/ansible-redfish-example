@@ -2,5 +2,33 @@
 - name: Compliance - check live state against baseline
   hosts: bmc
   gather_facts: false
-  roles:
-    - compliance_check
+
+  tasks:
+    - name: Compliance block — poll BMC, check baseline, write reports
+      block:
+        - name: Run compliance_check role
+          ansible.builtin.include_role:
+            name: compliance_check
+
+      rescue:
+        - name: Log failure reason
+          ansible.builtin.debug:
+            msg: "Compliance check failed for {{ inventory_hostname }}: {{ ansible_failed_result.msg }}"
+
+        - name: Write error record to reports
+          ansible.builtin.copy:
+            content: >-
+              {{ {'host': inventory_hostname,
+              'status': 'ERROR',
+              'error': ansible_failed_result.msg,
+              'timestamp': lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ')} | to_nice_json }}
+            dest: "{{ playbook_dir }}/../files/reports/{{ inventory_hostname }}_compliance_error.json"
+          delegate_to: localhost
+
+      always:
+        - name: Audit trail — record run completion
+          ansible.builtin.debug:
+            msg: >-
+              Compliance run completed for {{ inventory_hostname }} at
+              {{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}
+              — status: {{ overall_status | default('ERROR') }}
