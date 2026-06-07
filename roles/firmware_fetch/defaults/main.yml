@@ -1,0 +1,4 @@
+---
+firmware_fetch_retries: "{{ redfish_retries | default(5) }}"
+firmware_fetch_delay: "{{ redfish_retry_delay | default(10) }}"
+firmware_fetch_timeout: "{{ redfish_timeout | default(30) }}"

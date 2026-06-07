@@ -15,7 +15,9 @@
 - name: Set overall status and timestamp
   ansible.builtin.set_fact:
     report_timestamp: "{{ lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ') }}"
-    overall_status: "{{ 'FAIL' if ((firmware_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0) or (bios_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0)) else 'PASS' }}"
+    overall_status: >-
+      {{ 'FAIL' if ((firmware_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0)
+      or (bios_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0)) else 'PASS' }}
 
 - name: Compliance report - firmware
   ansible.builtin.debug:
@@ -29,7 +31,10 @@
 
 - name: Write JSON report
   ansible.builtin.copy:
-    content: "{{ {'host': inventory_hostname, 'timestamp': report_timestamp, 'overall_status': overall_status, 'firmware': firmware_findings, 'bios': bios_findings} | to_nice_json }}"
+    content: >-
+      {{ {'host': inventory_hostname, 'timestamp': report_timestamp,
+      'overall_status': overall_status, 'firmware': firmware_findings,
+      'bios': bios_findings} | to_nice_json }}
     dest: "{{ compliance_report_dir }}/{{ inventory_hostname }}_compliance.json"
   delegate_to: localhost
 

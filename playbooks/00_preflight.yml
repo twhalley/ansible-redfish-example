@@ -22,4 +22,6 @@
         that:
           - redfish_root.json.Vendor is defined
         fail_msg: "BMC at {{ bmc_address }} did not return a valid Redfish root"
-        success_msg: "{{ inventory_hostname }} - Vendor: {{ redfish_root.json.Vendor | default('unknown') }}, Product: {{ redfish_root.json.Product | default('unknown') }}"
+        success_msg: >-
+          {{ inventory_hostname }} - Vendor: {{ redfish_root.json.Vendor | default('unknown') }},
+          Product: {{ redfish_root.json.Product | default('unknown') }}

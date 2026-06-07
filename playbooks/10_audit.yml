@@ -7,8 +7,14 @@
   tasks:
     - name: Display firmware inventory
       ansible.builtin.debug:
-        msg: "{{ redfish_firmware_entries | map(attribute='Name') | zip(redfish_firmware_entries | map(attribute='Version')) | map('join', ' → ') | list }}"
+        msg: >-
+          {{ redfish_firmware_entries | map(attribute='Name')
+          | zip(redfish_firmware_entries | map(attribute='Version'))
+          | map('join', ' → ') | list }}
 
     - name: Display key BIOS attributes
       ansible.builtin.debug:
-        msg: "{{ redfish_bios_attrs | dict2items | selectattr('key', 'in', ['BootMode', 'AesNi', 'IntelTxt', 'IntelSgx', 'SecureBoot', 'EnergyPerformanceBias']) | list }}"
+        msg: >-
+          {{ redfish_bios_attrs | dict2items
+          | selectattr('key', 'in', ['BootMode', 'AesNi', 'IntelTxt', 'IntelSgx', 'SecureBoot', 'EnergyPerformanceBias'])
+          | list }}
