@@ -47,6 +47,23 @@
         msg: "[{{ item.status }}] {{ item.attribute }} — required: {{ item.required }}, actual: {{ item.actual }}"
       loop: "{{ bios_findings }}"
 
+    - name: Set overall status and timestamp
+      ansible.builtin.set_fact:
+        report_timestamp: "{{ ansible_date_time.iso8601 | default(lookup('pipe', 'date -u +%Y-%m-%dT%H:%M:%SZ')) }}"
+        overall_status: "{{ 'FAIL' if ((firmware_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0) or (bios_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0)) else 'PASS' }}"
+
+    - name: Write JSON report
+      ansible.builtin.copy:
+        content: "{{ {'host': inventory_hostname, 'timestamp': report_timestamp, 'overall_status': overall_status, 'firmware': firmware_findings, 'bios': bios_findings} | to_nice_json }}"
+        dest: "{{ playbook_dir }}/../files/reports/{{ inventory_hostname }}_compliance.json"
+      delegate_to: localhost
+
+    - name: Render HTML report
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/../templates/compliance_report.html.j2"
+        dest: "{{ playbook_dir }}/../files/reports/{{ inventory_hostname }}_compliance.html"
+      delegate_to: localhost
+
     - name: Fail if any findings are non-compliant
       ansible.builtin.fail:
         msg: "Compliance check FAILED for {{ inventory_hostname }} — review findings above"
