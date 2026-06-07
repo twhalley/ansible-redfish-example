@@ -106,6 +106,13 @@ jobs:
         run: ansible-playbook playbooks/20_compliance.yml --limit poc-dell-01
         continue-on-error: true
 
+      - name: Run BIOS password playbook (check mode)
+        env:
+          BIOS_OLD_PASSWORD: ${{ secrets.BIOS_OLD_PASSWORD }}
+          BIOS_NEW_PASSWORD: ${{ secrets.BIOS_NEW_PASSWORD }}
+        run: ansible-playbook playbooks/30_bios_password.yml --limit poc-dell-01 --check
+        continue-on-error: true
+
       - name: Remove vault password
         if: always()
         run: rm -f .vault_pass

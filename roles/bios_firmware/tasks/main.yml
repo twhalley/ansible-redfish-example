@@ -41,6 +41,7 @@
       {{ 'BIOS config job staged: ' + (bios_job_result.json.Id | default('unknown'))
       if bios_job_result.status in [200, 202]
       else 'Job endpoint 404 — expected on mockup; real iDRAC will create a job here' }}
+  when: bios_job_result is not skipped
 
 - name: Reboot to apply (only if explicitly enabled)
   ansible.builtin.uri:
