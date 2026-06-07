@@ -19,3 +19,7 @@ inventory/group_vars/all/vault.yml
 
 # Generated reports
 files/reports/
+
+# mock up server ssl certificates
+mockup-server.crt
+mockup-server.key
