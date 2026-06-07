@@ -24,7 +24,7 @@ jobs:
         run: pip install ansible-core yamllint ansible-lint
 
       - name: Install Ansible collections
-        run: ansible-galaxy collection install -r requirements.yml -p collections/
+        run: ansible-galaxy collection install -r requirements.yml
 
       - name: Write vault password from GitHub Secret
         env:
@@ -64,7 +64,7 @@ jobs:
         run: pip install ansible-core
 
       - name: Install Ansible collections
-        run: ansible-galaxy collection install -r requirements.yml -p collections/
+        run: ansible-galaxy collection install -r requirements.yml
 
       - name: Install mockup server
         run: |
