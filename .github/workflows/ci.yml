@@ -7,6 +7,9 @@ name: CI
   pull_request:
     branches: [master]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   lint-and-validate:
     runs-on: ubuntu-latest
@@ -68,13 +71,15 @@ jobs:
 
       - name: Install mockup server
         run: |
-          git clone https://github.com/DMTF/Redfish-Mockup-Server.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/DMTF/Redfish-Mockup-Server.git
           pip install -r Redfish-Mockup-Server/requirements.txt
 
       - name: Download Dell iDRAC mockup data
         run: |
-          git clone --depth=1 https://github.com/dell/iDRAC-Redfish-Scripting.git
-          unzip "iDRAC-Redfish-Scripting/iDRAC Redfish Mockup Clients/R660xs_iDRAC9_7_20_10_05_mockup_client.zip" -d idrac-mockup
+          git clone --depth=1 \
+            https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/dell/iDRAC-Redfish-Scripting.git
+          unzip "iDRAC-Redfish-Scripting/iDRAC Redfish Mockup Clients/R660xs_iDRAC9_7_20_10_05_mockup_client.zip" \
+            -d idrac-mockup
 
       - name: Generate SSL cert for mockup
         run: |
