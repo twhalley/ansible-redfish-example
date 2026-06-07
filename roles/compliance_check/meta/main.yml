@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: twhalley
+  description: Compare live Redfish facts against a YAML baseline and generate reports
+  license: MIT
+  min_ansible_version: "2.15"
+dependencies:
+  - role: redfish_facts

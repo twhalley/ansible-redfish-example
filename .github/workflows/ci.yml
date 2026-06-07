@@ -1,0 +1,106 @@
+---
+name: CI
+
+on:
+  push:
+    branches-ignore: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install ansible-core yamllint ansible-lint
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Write vault password from GitHub Secret
+        env:
+          VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+        run: |
+          printf '%s' "$VAULT_PASSWORD" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Run yamllint
+        run: yamllint -c .yamllint.yml .
+
+      - name: Syntax check all playbooks
+        run: |
+          for pb in playbooks/*.yml; do
+            echo "--- Checking $pb"
+            ansible-playbook "$pb" --syntax-check
+          done
+
+      - name: Remove vault password
+        if: always()
+        run: rm -f .vault_pass
+
+  compliance:
+    runs-on: ubuntu-latest
+    needs: lint-and-validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install ansible-core
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Install mockup server
+        run: |
+          git clone https://github.com/DMTF/Redfish-Mockup-Server.git
+          pip install -r Redfish-Mockup-Server/requirements.txt
+
+      - name: Download Dell iDRAC mockup data
+        run: |
+          git clone --depth=1 https://github.com/dell/iDRAC-Redfish-Scripting.git
+          unzip "iDRAC-Redfish-Scripting/iDRAC Redfish Mockup Clients/R660xs_iDRAC9_7_20_10_05_mockup_client.zip" -d idrac-mockup
+
+      - name: Generate SSL cert for mockup
+        run: |
+          openssl req -newkey rsa:2048 -nodes \
+            -keyout mockup-server.key -x509 -days 1 \
+            -out mockup-server.crt -subj "/CN=127.0.0.1"
+
+      - name: Start mockup server
+        run: |
+          python3 Redfish-Mockup-Server/redfishMockupServer.py \
+            -D idrac-mockup/R660xs_iDRAC9_7_20_10_05_mockup_client \
+            -p 8000 --host 127.0.0.1 \
+            --ssl --cert mockup-server.crt --key mockup-server.key &
+          sleep 3
+
+      - name: Write vault password from GitHub Secret
+        env:
+          VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+        run: |
+          printf '%s' "$VAULT_PASSWORD" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Run compliance playbook
+        run: ansible-playbook playbooks/20_compliance.yml --limit poc-dell-01
+        continue-on-error: true
+
+      - name: Remove vault password
+        if: always()
+        run: rm -f .vault_pass

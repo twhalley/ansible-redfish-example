@@ -1,0 +1,25 @@
+---
+- name: Get firmware inventory
+  community.general.redfish_info:
+    category: Update
+    command: GetFirmwareInventory
+    baseuri: "{{ baseuri }}"
+    username: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+  register: redfish_firmware_result
+  delegate_to: localhost
+
+- name: Get BIOS attributes
+  community.general.redfish_info:
+    category: Systems
+    command: GetBiosAttributes
+    baseuri: "{{ baseuri }}"
+    username: "{{ bmc_username }}"
+    password: "{{ bmc_password }}"
+  register: redfish_bios_result
+  delegate_to: localhost
+
+- name: Set firmware and BIOS facts
+  ansible.builtin.set_fact:
+    redfish_firmware_entries: "{{ redfish_firmware_result.redfish_facts.firmware.entries }}"
+    redfish_bios_attrs: "{{ redfish_bios_result.redfish_facts.bios_attribute.entries[0][1] }}"

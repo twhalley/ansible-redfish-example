@@ -1,0 +1,3 @@
+---
+# Overridable at playbook level if needed
+redfish_timeout: 30
