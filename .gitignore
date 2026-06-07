@@ -14,8 +14,6 @@ __pycache__/
 .vault_pass
 *.vault_pass
 
-# Decrypted secrets
-inventory/group_vars/all/vault.yml
 
 # Generated reports
 files/reports/

@@ -29,6 +29,13 @@
     msg: "[{{ item.status }}] {{ item.attribute }} — required: {{ item.required }}, actual: {{ item.actual }}"
   loop: "{{ bios_findings }}"
 
+- name: Ensure report directory exists
+  ansible.builtin.file:
+    path: "{{ compliance_report_dir }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+
 - name: Write JSON report
   ansible.builtin.copy:
     content: >-
