@@ -1,0 +1,27 @@
+---
+- name: Preflight - verify BMC Redfish connectivity
+  hosts: bmc
+  gather_facts: false
+
+  tasks:
+    - name: Probe Redfish root endpoint
+      ansible.builtin.uri:
+        url: "http://{{ bmc_address }}/redfish/v1"
+        method: GET
+        user: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+        validate_certs: "{{ redfish_validate_certs }}"
+        timeout: "{{ redfish_timeout }}"
+        force_basic_auth: true
+        status_code: 200
+      register: redfish_root
+      delegate_to: localhost
+
+    - name: Assert vendor matches expected
+      ansible.builtin.assert:
+        that:
+          - redfish_root.json.Vendor is defined
+        fail_msg: "BMC at {{ bmc_address }} did not return a valid Redfish root"
+        success_msg: >-
+          {{ inventory_hostname }} - Vendor: {{ redfish_root.json.Vendor | default('unknown') }},
+          Product: {{ redfish_root.json.Product | default('unknown') }}
