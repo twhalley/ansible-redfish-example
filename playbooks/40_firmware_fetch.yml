@@ -1,6 +1,0 @@
----
-- name: Firmware fetch - poll BMC firmware inventory via raw Redfish URI
-  hosts: dell_idrac
-  gather_facts: false
-  roles:
-    - firmware_fetch

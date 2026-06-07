@@ -1,3 +1,0 @@
----
-compliance_baseline_file: "{{ playbook_dir }}/../baselines/dell_idrac9_r660xs.yml"
-compliance_report_dir: "{{ playbook_dir }}/../files/reports"
