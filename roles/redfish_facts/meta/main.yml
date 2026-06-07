@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: twhalley
+  description: Poll a BMC via Redfish and expose firmware and BIOS facts
+  license: MIT
+  min_ansible_version: "2.15"
+collections:
+  - community.general
