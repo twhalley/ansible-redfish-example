@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /home/walrus/ansible-redfish-example/.github/workflows)"
+    ],
+    "additionalDirectories": [
+      "/home/walrus/ansible-redfish-example/.github"
+    ]
+  }
+}
