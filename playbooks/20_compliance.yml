@@ -1,0 +1,55 @@
+---
+- name: Compliance - check live state against baseline
+  hosts: bmc
+  gather_facts: false
+
+  tasks:
+    - name: Load baseline for this host
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../baselines/dell_idrac9_r660xs.yml"
+        name: baseline
+
+    - name: Get firmware inventory
+      community.general.redfish_info:
+        category: Update
+        command: GetFirmwareInventory
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+      register: firmware_result
+      delegate_to: localhost
+
+    - name: Get BIOS attributes
+      community.general.redfish_info:
+        category: Systems
+        command: GetBiosAttributes
+        baseuri: "{{ baseuri }}"
+        username: "{{ bmc_username }}"
+        password: "{{ bmc_password }}"
+      register: bios_result
+      delegate_to: localhost
+
+    - name: Run firmware compliance check
+      ansible.builtin.set_fact:
+        firmware_findings: "{{ firmware_result.redfish_facts.firmware.entries | check_firmware(baseline.firmware.required) }}"
+
+    - name: Run BIOS compliance check
+      ansible.builtin.set_fact:
+        bios_findings: "{{ bios_result.redfish_facts.bios_attribute.entries[0][1] | check_bios(baseline.bios.required) }}"
+
+    - name: Compliance report - firmware
+      ansible.builtin.debug:
+        msg: "[{{ item.status }}] {{ item.name }} — required: {{ item.required }}, actual: {{ item.actual }}"
+      loop: "{{ firmware_findings }}"
+
+    - name: Compliance report - BIOS
+      ansible.builtin.debug:
+        msg: "[{{ item.status }}] {{ item.attribute }} — required: {{ item.required }}, actual: {{ item.actual }}"
+      loop: "{{ bios_findings }}"
+
+    - name: Fail if any findings are non-compliant
+      ansible.builtin.fail:
+        msg: "Compliance check FAILED for {{ inventory_hostname }} — review findings above"
+      when: >
+        (firmware_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0) or
+        (bios_findings | selectattr('status', 'equalto', 'FAIL') | list | length > 0)
