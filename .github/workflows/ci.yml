@@ -30,7 +30,7 @@ jobs:
         env:
           VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
         run: |
-          echo "$VAULT_PASSWORD" > .vault_pass
+          printf '%s' "$VAULT_PASSWORD" > .vault_pass
           chmod 600 .vault_pass
 
       - name: Run yamllint
@@ -94,7 +94,7 @@ jobs:
         env:
           VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
         run: |
-          echo "$VAULT_PASSWORD" > .vault_pass
+          printf '%s' "$VAULT_PASSWORD" > .vault_pass
           chmod 600 .vault_pass
 
       - name: Run compliance playbook
